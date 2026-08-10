@@ -1,3 +1,4 @@
+
 class Breed {
   const Breed({
     required this.id,

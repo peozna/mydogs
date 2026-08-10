@@ -100,4 +100,4 @@ Minimum OS versions follow Flutter SDK defaults (`flutter.minSdkVersion` for And
 
 ## License
 
-Private project — not for distribution.
+MPL-2.0
