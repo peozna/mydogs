@@ -1,0 +1,1 @@
+cd app && flutter run -d emulator-5554 --dart-define=DOG_API_KEY=live_GumRCRMNtoTLeOzfiLEMMiACu4PikEQL0zoG7F1LDSz2z2ZyFgGkxp6aSgqMyGYk
