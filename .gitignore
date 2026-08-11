@@ -1,0 +1,13 @@
+# Secret-bearing files — never commit API keys or credentials
+API-KEY.txt
+*.env
+*.env.*
+**/local_defines.json
+**/defines.json
+**/secrets.json
+**/api_key.txt
+**/.api_key
+
+# OS files
+.DS_Store
+Thumbs.db
