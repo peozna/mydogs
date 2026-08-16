@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required so release builds can reach TheDogAPI and download images.
+         Debug/profile builds get this from their own manifests. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="MyDogs"
         android:name="${applicationName}"
