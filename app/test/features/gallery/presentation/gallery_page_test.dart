@@ -8,9 +8,8 @@ import 'package:mydogs/features/gallery/presentation/gallery_page.dart';
 import 'package:mydogs/features/gallery/presentation/saved_dog_detail_page.dart';
 
 class FakeGalleryRepository implements GalleryRepository {
-  FakeGalleryRepository({
-    List<SavedDog>? initialDogs,
-  }) : dogs = initialDogs ?? [];
+  FakeGalleryRepository({List<SavedDog>? initialDogs})
+    : dogs = initialDogs ?? [];
 
   final List<SavedDog> dogs;
   final List<String> deletedIds = [];
@@ -41,9 +40,7 @@ void main() {
           overrides: [
             galleryRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: GalleryPage(),
-          ),
+          child: const MaterialApp(home: GalleryPage()),
         ),
       );
 
@@ -52,7 +49,9 @@ void main() {
 
       expect(find.text('No Saved Dogs Yet'), findsOneWidget);
       expect(
-        find.text('Tap the heart icon on any dog in the Discovery screen to save them to your offline gallery!'),
+        find.text(
+          'Tap the heart icon on any dog in the Discovery screen to save them to your offline gallery!',
+        ),
         findsOneWidget,
       );
     });
@@ -86,9 +85,7 @@ void main() {
           overrides: [
             galleryRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: GalleryPage(),
-          ),
+          child: const MaterialApp(home: GalleryPage()),
         ),
       );
 
@@ -99,7 +96,9 @@ void main() {
       expect(find.byType(Card), findsNWidgets(2));
     });
 
-    testWidgets('triggers deletion and updates list on confirmation', (tester) async {
+    testWidgets('triggers deletion and updates list on confirmation', (
+      tester,
+    ) async {
       final savedDogs = [
         SavedDog(
           id: 'dog_1',
@@ -119,9 +118,7 @@ void main() {
           overrides: [
             galleryRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: GalleryPage(),
-          ),
+          child: const MaterialApp(home: GalleryPage()),
         ),
       );
 
@@ -162,7 +159,7 @@ void main() {
               description: 'Active and smart.',
               temperament: 'Intelligent, Faithful',
               lifeSpan: '12-15 years',
-            )
+            ),
           ],
           savedAt: DateTime.now(),
         ),
@@ -175,9 +172,7 @@ void main() {
           overrides: [
             galleryRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: SavedDogDetailPage(id: 'dog_1'),
-          ),
+          child: const MaterialApp(home: SavedDogDetailPage(id: 'dog_1')),
         ),
       );
 
@@ -207,7 +202,10 @@ void main() {
 
       await tester.pump();
 
-      expect(find.text('Saved dog not found or has been deleted.'), findsOneWidget);
+      expect(
+        find.text('Saved dog not found or has been deleted.'),
+        findsOneWidget,
+      );
     });
   });
 }

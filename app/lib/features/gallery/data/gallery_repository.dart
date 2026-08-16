@@ -63,7 +63,9 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
       final success = await prefs.setStringList(_key, currentList);
       if (!success) {
-        throw const StorageException(cause: 'Failed to save string list to SharedPreferences.');
+        throw const StorageException(
+          cause: 'Failed to save string list to SharedPreferences.',
+        );
       }
     } catch (e) {
       // Cleanup written file if metadata persistence fails
@@ -105,7 +107,9 @@ class GalleryRepositoryImpl implements GalleryRepository {
 
         final success = await prefs.setStringList(_key, newList);
         if (!success) {
-          throw const StorageException(cause: 'Failed to write updated list to SharedPreferences.');
+          throw const StorageException(
+            cause: 'Failed to write updated list to SharedPreferences.',
+          );
         }
       }
     } catch (e) {

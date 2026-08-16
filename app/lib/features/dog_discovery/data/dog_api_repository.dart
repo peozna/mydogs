@@ -48,7 +48,9 @@ class DogApiRepositoryImpl implements DogApiRepository {
 
         final dto = ImageDto.fromJson(firstItem);
         // Select the first usable item and require a non-empty url and at least one breed.
-        if (dto.url.isNotEmpty && dto.breeds != null && dto.breeds!.isNotEmpty) {
+        if (dto.url.isNotEmpty &&
+            dto.breeds != null &&
+            dto.breeds!.isNotEmpty) {
           return dto.toDomain();
         }
 

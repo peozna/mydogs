@@ -44,6 +44,40 @@ final dioProvider = Provider<Dio>((ref) {
   return dio;
 });
 
+/// Dio instance used for downloading dog images from their CDN URLs.
+///
+/// This client deliberately does NOT attach the `x-api-key` header, because
+/// image URLs point to a third-party CDN and leaking the key there would be
+/// a security risk. Only HTTPS URLs are allowed.
+final imageDioProvider = Provider<Dio>((ref) {
+  final dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 30),
+    ),
+  );
+
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        if (options.uri.scheme != 'https') {
+          return handler.reject(
+            DioException(
+              requestOptions: options,
+              error: const ImageDownloadException(
+                cause: 'Only HTTPS image URLs are allowed.',
+              ),
+            ),
+          );
+        }
+        return handler.next(options);
+      },
+    ),
+  );
+
+  return dio;
+});
+
 AppException _mapDioErrorToAppException(DioException error) {
   if (error.error is AppException) {
     return error.error as AppException;

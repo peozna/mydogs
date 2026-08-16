@@ -6,11 +6,7 @@ import 'package:mydogs/app/app.dart';
 void main() {
   testWidgets('App launches and shows discovery placeholder', (tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: MyDogsApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: MyDogsApp()));
 
     // Without an API key, the app should show the configuration error
     // rather than crashing.

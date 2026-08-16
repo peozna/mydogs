@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../domain/saved_dog.dart';
 import 'gallery_controller.dart';
 
-final savedDogByIdProvider = Provider.family.autoDispose<SavedDog?, String>((ref, id) {
+final savedDogByIdProvider = Provider.family.autoDispose<SavedDog?, String>((
+  ref,
+  id,
+) {
   final galleryState = ref.watch(galleryControllerProvider);
   return galleryState.maybeWhen(
     data: (list) {
@@ -48,148 +51,208 @@ class SavedDogDetailPage extends ConsumerWidget {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Card(
-                clipBehavior: Clip.antiAlias,
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: AspectRatio(
-                  aspectRatio: savedDog.width / savedDog.height,
-                  child: Image.file(
-                    File(savedDog.localImagePath),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .errorContainer
-                          .withAlpha(128),
-                      child: const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.broken_image, size: 64, color: Colors.red),
-                            SizedBox(height: 12),
-                            Text(
-                              'Local file missing or corrupt',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: savedDog.width / savedDog.height,
+                      child: Semantics(
+                        label:
+                            'Saved photo of ${breed?.name ?? 'unknown breed'} dog',
+                        image: true,
+                        child: Image.file(
+                          File(savedDog.localImagePath),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.errorContainer.withAlpha(128),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.broken_image,
+                                        size: 64,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        'Local file missing or corrupt',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (breed != null) ...[
-                    Text(
-                      breed.name,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                    ),
-                    if (breed.breedGroup != null && breed.breedGroup!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        breed.breedGroup!,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.grey,
-                              fontStyle: FontStyle.italic,
-                            ),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _InfoSection(
-                      title: 'About the Breed',
-                      icon: Icons.info_outline,
-                      children: [
-                        if (breed.description != null && breed.description!.isNotEmpty)
-                          _InfoRow(label: 'Description', value: breed.description!),
-                        if (breed.temperament != null && breed.temperament!.isNotEmpty)
-                          _InfoRow(label: 'Temperament', value: breed.temperament!),
-                        if (breed.lifeSpan != null && breed.lifeSpan!.isNotEmpty)
-                          _InfoRow(label: 'Life Span', value: breed.lifeSpan!),
-                        if (breed.origin != null && breed.origin!.isNotEmpty)
-                          _InfoRow(label: 'Origin', value: breed.origin!),
-                        if (breed.bredFor != null && breed.bredFor!.isNotEmpty)
-                          _InfoRow(label: 'Bred For', value: breed.bredFor!),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _InfoSection(
-                      title: 'Physical Characteristics',
-                      icon: Icons.straighten,
-                      children: [
-                        if (breed.heightMetric != null || breed.heightImperial != null)
-                          _InfoRow(
-                            label: 'Height',
-                            value: '${breed.heightMetric ?? ''} cm (${breed.heightImperial ?? ''} in)',
-                          ),
-                        if (breed.weightMetric != null || breed.weightImperial != null)
-                          _InfoRow(
-                            label: 'Weight',
-                            value: '${breed.weightMetric ?? ''} kg (${breed.weightImperial ?? ''} lbs)',
-                          ),
-                      ],
-                    ),
-                  ] else ...[
-                    Text(
-                      'Unknown Breed',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    const Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text('No breed details were available when this dog was saved.'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  _InfoSection(
-                    title: 'Storage Snapshot',
-                    icon: Icons.folder_open,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _InfoRow(label: 'Original API ID', value: savedDog.id),
-                      _InfoRow(label: 'Original URL', value: savedDog.url),
-                      _InfoRow(label: 'Local File Path', value: savedDog.localImagePath),
-                      _InfoRow(
-                        label: 'Saved On',
-                        value: savedDog.savedAt.toLocal().toString().split('.').first,
+                      if (breed != null) ...[
+                        Text(
+                          breed.name,
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                        ),
+                        if (breed.breedGroup != null &&
+                            breed.breedGroup!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            breed.breedGroup!,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        _InfoSection(
+                          title: 'About the Breed',
+                          icon: Icons.info_outline,
+                          children: [
+                            if (breed.description != null &&
+                                breed.description!.isNotEmpty)
+                              _InfoRow(
+                                label: 'Description',
+                                value: breed.description!,
+                              ),
+                            if (breed.temperament != null &&
+                                breed.temperament!.isNotEmpty)
+                              _InfoRow(
+                                label: 'Temperament',
+                                value: breed.temperament!,
+                              ),
+                            if (breed.lifeSpan != null &&
+                                breed.lifeSpan!.isNotEmpty)
+                              _InfoRow(
+                                label: 'Life Span',
+                                value: breed.lifeSpan!,
+                              ),
+                            if (breed.origin != null &&
+                                breed.origin!.isNotEmpty)
+                              _InfoRow(label: 'Origin', value: breed.origin!),
+                            if (breed.bredFor != null &&
+                                breed.bredFor!.isNotEmpty)
+                              _InfoRow(
+                                label: 'Bred For',
+                                value: breed.bredFor!,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _InfoSection(
+                          title: 'Physical Characteristics',
+                          icon: Icons.straighten,
+                          children: [
+                            if (breed.heightMetric != null ||
+                                breed.heightImperial != null)
+                              _InfoRow(
+                                label: 'Height',
+                                value:
+                                    '${breed.heightMetric ?? ''} cm (${breed.heightImperial ?? ''} in)',
+                              ),
+                            if (breed.weightMetric != null ||
+                                breed.weightImperial != null)
+                              _InfoRow(
+                                label: 'Weight',
+                                value:
+                                    '${breed.weightMetric ?? ''} kg (${breed.weightImperial ?? ''} lbs)',
+                              ),
+                          ],
+                        ),
+                      ] else ...[
+                        Text(
+                          'Unknown Breed',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 16),
+                        const Card(
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'No breed details were available when this dog was saved.',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      _InfoSection(
+                        title: 'Storage Snapshot',
+                        icon: Icons.folder_open,
+                        children: [
+                          _InfoRow(
+                            label: 'Original API ID',
+                            value: savedDog.id,
+                          ),
+                          _InfoRow(label: 'Original URL', value: savedDog.url),
+                          _InfoRow(
+                            label: 'Local File Path',
+                            value: savedDog.localImagePath,
+                          ),
+                          _InfoRow(
+                            label: 'Saved On',
+                            value: savedDog.savedAt
+                                .toLocal()
+                                .toString()
+                                .split('.')
+                                .first,
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 40),
                     ],
                   ),
-                  const SizedBox(height: 40),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  void _confirmDeletion(BuildContext context, WidgetRef ref, SavedDog savedDog) {
+  void _confirmDeletion(
+    BuildContext context,
+    WidgetRef ref,
+    SavedDog savedDog,
+  ) {
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -216,7 +279,9 @@ class SavedDogDetailPage extends ConsumerWidget {
         // Go back to gallery first, then delete, to ensure UI context remains valid
         if (context.mounted) {
           context.pop();
-          await ref.read(galleryControllerProvider.notifier).deleteSavedDog(savedDog.id);
+          await ref
+              .read(galleryControllerProvider.notifier)
+              .deleteSavedDog(savedDog.id);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Removed dog from gallery.')),
@@ -245,9 +310,7 @@ class _InfoSection extends StatelessWidget {
 
     return Card(
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -255,13 +318,19 @@ class _InfoSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+                Icon(
+                  icon,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -289,17 +358,14 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 14),
-          ),
+          Text(value, style: const TextStyle(fontSize: 14)),
         ],
       ),
     );

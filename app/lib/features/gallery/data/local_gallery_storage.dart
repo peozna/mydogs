@@ -67,6 +67,8 @@ class LocalGalleryStorage {
 }
 
 final localGalleryStorageProvider = Provider<LocalGalleryStorage>((ref) {
-  final dio = ref.watch(dioProvider);
+  // Use the image-specific Dio client that does not attach the API key
+  // and enforces HTTPS-only requests.
+  final dio = ref.watch(imageDioProvider);
   return LocalGalleryStorage(dio);
 });

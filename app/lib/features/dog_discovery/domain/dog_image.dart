@@ -1,4 +1,3 @@
-ls
 import 'breed.dart';
 
 class DogImage {

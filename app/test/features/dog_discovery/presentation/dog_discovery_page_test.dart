@@ -11,9 +11,7 @@ import 'package:mydogs/features/dog_discovery/presentation/dog_discovery_control
 import 'package:mydogs/features/dog_discovery/presentation/dog_discovery_page.dart';
 
 class FakeDogApiRepository implements DogApiRepository {
-  FakeDogApiRepository({
-    this.onGetRandomDogWithBreed,
-  });
+  FakeDogApiRepository({this.onGetRandomDogWithBreed});
 
   Future<DogImage> Function()? onGetRandomDogWithBreed;
 
@@ -36,72 +34,143 @@ void main() {
   });
 
   group('DogDiscoveryController Unit Tests', () {
-    test('initial state is AsyncLoading, then transitions to AsyncData on success', () async {
+    test(
+      'initial state is AsyncLoading, then transitions to AsyncData on success',
+      () async {
+        final dogImage = DogImage(
+          id: '123',
+          url: 'https://example.com/dog.jpg',
+          width: 100,
+          height: 100,
+          breeds: [const Breed(id: '1', name: 'German Shepherd')],
+        );
+
+        final fakeRepository = FakeDogApiRepository(
+          onGetRandomDogWithBreed: () async => dogImage,
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            dogApiRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        // Verify that the initial build returns a future that resolves to dogImage
+        expect(
+          container.read(dogDiscoveryControllerProvider),
+          const AsyncLoading<DogImage>(),
+        );
+
+        final result = await container.read(
+          dogDiscoveryControllerProvider.future,
+        );
+        expect(result, dogImage);
+        expect(container.read(dogDiscoveryControllerProvider).value, dogImage);
+      },
+    );
+
+    test(
+      'transitions to AsyncError when repository throws AppException',
+      () async {
+        final fakeRepository = FakeDogApiRepository(
+          onGetRandomDogWithBreed: () async => throw const ApiAuthException(),
+        );
+
+        final container = ProviderContainer(
+          overrides: [
+            dogApiRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        expect(
+          container.read(dogDiscoveryControllerProvider),
+          const AsyncLoading<DogImage>(),
+        );
+
+        try {
+          await container.read(dogDiscoveryControllerProvider.future);
+          fail('Should have thrown an error');
+        } catch (e) {
+          expect(e, isA<ApiAuthException>());
+        }
+
+        expect(container.read(dogDiscoveryControllerProvider).hasError, true);
+        expect(
+          container.read(dogDiscoveryControllerProvider).error,
+          isA<ApiAuthException>(),
+        );
+      },
+    );
+
+    test('fetchNewDog guards against concurrent invocations', () async {
+      int callCount = 0;
+      final completers = <Completer<DogImage>>[];
       final dogImage = DogImage(
         id: '123',
         url: 'https://example.com/dog.jpg',
         width: 100,
         height: 100,
-        breeds: [
-          const Breed(id: '1', name: 'German Shepherd'),
-        ],
+        breeds: [const Breed(id: '1', name: 'German Shepherd')],
       );
 
       final fakeRepository = FakeDogApiRepository(
-        onGetRandomDogWithBreed: () async => dogImage,
+        onGetRandomDogWithBreed: () {
+          callCount++;
+          final completer = Completer<DogImage>();
+          completers.add(completer);
+          return completer.future;
+        },
       );
 
       final container = ProviderContainer(
-        overrides: [
-          dogApiRepositoryProvider.overrideWithValue(fakeRepository),
-        ],
+        overrides: [dogApiRepositoryProvider.overrideWithValue(fakeRepository)],
       );
       addTearDown(container.dispose);
 
-      // Verify that the initial build returns a future that resolves to dogImage
-      expect(container.read(dogDiscoveryControllerProvider), const AsyncLoading<DogImage>());
+      // Trigger the initial build but keep it pending.
+      final initialFuture = container.read(
+        dogDiscoveryControllerProvider.future,
+      );
+      expect(callCount, 1);
 
-      final result = await container.read(dogDiscoveryControllerProvider.future);
-      expect(result, dogImage);
+      // While the initial build fetch is still in flight, attempt two manual
+      // fetches. Both must be ignored by the concurrency guard.
+      final notifier = container.read(dogDiscoveryControllerProvider.notifier);
+      final manual1 = notifier.fetchNewDog();
+      final manual2 = notifier.fetchNewDog();
+
+      // No additional repository calls should have been made.
+      expect(callCount, 1);
+
+      // Complete the in-flight fetch and drain all pending futures.
+      completers.single.complete(dogImage);
+      await initialFuture;
+      await manual1;
+      await manual2;
+
+      // Still only one call — concurrent invocations were coalesced.
+      expect(callCount, 1);
       expect(container.read(dogDiscoveryControllerProvider).value, dogImage);
-    });
 
-    test('transitions to AsyncError when repository throws AppException', () async {
-      final fakeRepository = FakeDogApiRepository(
-        onGetRandomDogWithBreed: () async => throw const ApiAuthException(),
-      );
-
-      final container = ProviderContainer(
-        overrides: [
-          dogApiRepositoryProvider.overrideWithValue(fakeRepository),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      expect(container.read(dogDiscoveryControllerProvider), const AsyncLoading<DogImage>());
-
-      try {
-        await container.read(dogDiscoveryControllerProvider.future);
-        fail('Should have thrown an error');
-      } catch (e) {
-        expect(e, isA<ApiAuthException>());
-      }
-
-      expect(container.read(dogDiscoveryControllerProvider).hasError, true);
-      expect(container.read(dogDiscoveryControllerProvider).error, isA<ApiAuthException>());
+      // After the in-flight fetch completes, a new fetch is allowed again.
+      final secondFetch = notifier.fetchNewDog();
+      expect(callCount, 2);
+      completers.last.complete(dogImage);
+      await secondFetch;
+      expect(callCount, 2);
     });
   });
 
   group('DogDiscoveryPage Widget Tests', () {
-    testWidgets('shows ConfigurationError when no API key configured', (tester) async {
+    testWidgets('shows ConfigurationError when no API key configured', (
+      tester,
+    ) async {
       AppConfig.overrideApiKey = null;
 
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
-            home: DogDiscoveryPage(),
-          ),
-        ),
+        const ProviderScope(child: MaterialApp(home: DogDiscoveryPage())),
       );
 
       expect(find.text('API Key Required'), findsOneWidget);
@@ -118,9 +187,7 @@ void main() {
           overrides: [
             dogApiRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: DogDiscoveryPage(),
-          ),
+          child: const MaterialApp(home: DogDiscoveryPage()),
         ),
       );
 
@@ -128,7 +195,9 @@ void main() {
       expect(find.text('Fetching a cute dog...'), findsOneWidget);
     });
 
-    testWidgets('shows success state with breed info when fetch succeeds', (tester) async {
+    testWidgets('shows success state with breed info when fetch succeeds', (
+      tester,
+    ) async {
       final dogImage = DogImage(
         id: '123',
         url: 'https://example.com/dog.jpg',
@@ -156,9 +225,7 @@ void main() {
           overrides: [
             dogApiRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: DogDiscoveryPage(),
-          ),
+          child: const MaterialApp(home: DogDiscoveryPage()),
         ),
       );
 
@@ -175,16 +242,16 @@ void main() {
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
-    testWidgets('shows error state and retries when fetch fails', (tester) async {
+    testWidgets('shows error state and retries when fetch fails', (
+      tester,
+    ) async {
       int callCount = 0;
       final dogImage = DogImage(
         id: '123',
         url: 'https://example.com/dog.jpg',
         width: 100,
         height: 100,
-        breeds: [
-          const Breed(id: '1', name: 'German Shepherd'),
-        ],
+        breeds: [const Breed(id: '1', name: 'German Shepherd')],
       );
 
       final fakeRepository = FakeDogApiRepository(
@@ -202,9 +269,7 @@ void main() {
           overrides: [
             dogApiRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const MaterialApp(
-            home: DogDiscoveryPage(),
-          ),
+          child: const MaterialApp(home: DogDiscoveryPage()),
         ),
       );
 
@@ -213,7 +278,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Error Occurred'), findsOneWidget);
-      expect(find.text('Network error. Check your connection and try again.'), findsOneWidget);
+      expect(
+        find.text('Network error. Check your connection and try again.'),
+        findsOneWidget,
+      );
       expect(find.widgetWithText(ElevatedButton, 'Retry'), findsOneWidget);
 
       // Tap Retry
@@ -224,6 +292,50 @@ void main() {
       // Should now show success state
       expect(find.text('German Shepherd'), findsOneWidget);
       expect(callCount, 2);
+    });
+
+    testWidgets('renders without overflow at 2x text scale', (tester) async {
+      final dogImage = DogImage(
+        id: '123',
+        url: 'https://example.com/dog.jpg',
+        width: 100,
+        height: 100,
+        breeds: [
+          const Breed(
+            id: '1',
+            name: 'German Shepherd',
+            breedGroup: 'Herding',
+            description: 'Intelligent working dog.',
+            temperament: 'Loyal, Obedient',
+            lifeSpan: '10-13 years',
+            origin: 'Germany',
+          ),
+        ],
+      );
+
+      final fakeRepository = FakeDogApiRepository(
+        onGetRandomDogWithBreed: () async => dogImage,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            dogApiRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
+              child: const DogDiscoveryPage(),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('German Shepherd'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

@@ -38,8 +38,12 @@ class BreedDto {
       hImp = heightMap['imperial']?.toString();
       hMet = heightMap['metric']?.toString();
     } else {
-      hImp = json['male_height_inches']?.toString() ?? json['female_height_inches']?.toString();
-      hMet = json['male_height_cm']?.toString() ?? json['female_height_cm']?.toString();
+      hImp =
+          json['male_height_inches']?.toString() ??
+          json['female_height_inches']?.toString();
+      hMet =
+          json['male_height_cm']?.toString() ??
+          json['female_height_cm']?.toString();
     }
 
     String? wImp;
@@ -49,8 +53,12 @@ class BreedDto {
       wImp = weightMap['imperial']?.toString();
       wMet = weightMap['metric']?.toString();
     } else {
-      wImp = json['male_weight_pounds']?.toString() ?? json['female_weight_pounds']?.toString();
-      wMet = json['male_weight_kg']?.toString() ?? json['female_weight_kg']?.toString();
+      wImp =
+          json['male_weight_pounds']?.toString() ??
+          json['female_weight_pounds']?.toString();
+      wMet =
+          json['male_weight_kg']?.toString() ??
+          json['female_weight_kg']?.toString();
     }
 
     return BreedDto(

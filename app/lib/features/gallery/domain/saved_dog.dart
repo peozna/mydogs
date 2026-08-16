@@ -27,20 +27,22 @@ class SavedDog {
       'width': width,
       'height': height,
       'breeds': breeds
-          .map((b) => {
-                'id': b.id,
-                'name': b.name,
-                'lifeSpan': b.lifeSpan,
-                'temperament': b.temperament,
-                'origin': b.origin,
-                'description': b.description,
-                'breedGroup': b.breedGroup,
-                'bredFor': b.bredFor,
-                'heightImperial': b.heightImperial,
-                'heightMetric': b.heightMetric,
-                'weightImperial': b.weightImperial,
-                'weightMetric': b.weightMetric,
-              })
+          .map(
+            (b) => {
+              'id': b.id,
+              'name': b.name,
+              'lifeSpan': b.lifeSpan,
+              'temperament': b.temperament,
+              'origin': b.origin,
+              'description': b.description,
+              'breedGroup': b.breedGroup,
+              'bredFor': b.bredFor,
+              'heightImperial': b.heightImperial,
+              'heightMetric': b.heightMetric,
+              'weightImperial': b.weightImperial,
+              'weightMetric': b.weightMetric,
+            },
+          )
           .toList(),
       'savedAt': savedAt.toIso8601String(),
     };
@@ -53,7 +55,8 @@ class SavedDog {
       url: json['url'] as String,
       width: json['width'] as int,
       height: json['height'] as int,
-      breeds: (json['breeds'] as List<dynamic>?)?.map((b) {
+      breeds:
+          (json['breeds'] as List<dynamic>?)?.map((b) {
             final map = b as Map<String, dynamic>;
             return Breed(
               id: map['id']?.toString() ?? '',

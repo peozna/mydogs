@@ -3,7 +3,10 @@
 /// Reads the TheDogAPI key from `--dart-define=DOG_API_KEY=...` at build time.
 /// The key is never committed to source control.
 class AppConfig {
-  static const _apiKey = String.fromEnvironment('DOG_API_KEY', defaultValue: '');
+  static const _apiKey = String.fromEnvironment(
+    'DOG_API_KEY',
+    defaultValue: '',
+  );
 
   static String? _overrideApiKey;
 

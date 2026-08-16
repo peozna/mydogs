@@ -1,6 +1,3 @@
-
-
-
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
@@ -49,9 +46,9 @@ void main() {
             'breed_group': 'Herding',
             'bred_for': 'Herding sheep',
             'height': {'imperial': '22-26', 'metric': '56-66'},
-            'weight': {'imperial': '50-90', 'metric': '23-41'}
-          }
-        ]
+            'weight': {'imperial': '50-90', 'metric': '23-41'},
+          },
+        ],
       };
 
       final dto = ImageDto.fromJson(json);
@@ -89,8 +86,8 @@ void main() {
             'id': '115',
             'name': 'German Shepherd',
             // Missing all other optional fields
-          }
-        ]
+          },
+        ],
       };
 
       final dto = ImageDto.fromJson(json);
@@ -135,9 +132,9 @@ void main() {
           'width': 640,
           'height': 480,
           'breeds': [
-            {'id': '115', 'name': 'German Shepherd'}
-          ]
-        }
+            {'id': '115', 'name': 'German Shepherd'},
+          ],
+        },
       ];
 
       mockAdapter.handler = (options) async {
@@ -153,98 +150,101 @@ void main() {
       expect(result.breeds.first.name, 'German Shepherd');
     });
 
-    test('getRandomDogWithBreed retries on unusable response and eventually succeeds', () async {
-      int callCount = 0;
-      final emptyBreedResponse = [
-        {
-          'id': 'no_breed',
-          'url': 'https://example.com/no_breed.jpg',
-          'width': 640,
-          'height': 480,
-          'breeds': [] // Invalid, has no breeds
-        }
-      ];
-      final validResponse = [
-        {
-          'id': 'valid_dog',
-          'url': 'https://example.com/valid.jpg',
-          'width': 640,
-          'height': 480,
-          'breeds': [
-            {'id': '1', 'name': 'Golden Retriever'}
-          ]
-        }
-      ];
+    test(
+      'getRandomDogWithBreed retries on unusable response and eventually succeeds',
+      () async {
+        int callCount = 0;
+        final emptyBreedResponse = [
+          {
+            'id': 'no_breed',
+            'url': 'https://example.com/no_breed.jpg',
+            'width': 640,
+            'height': 480,
+            'breeds': [], // Invalid, has no breeds
+          },
+        ];
+        final validResponse = [
+          {
+            'id': 'valid_dog',
+            'url': 'https://example.com/valid.jpg',
+            'width': 640,
+            'height': 480,
+            'breeds': [
+              {'id': '1', 'name': 'Golden Retriever'},
+            ],
+          },
+        ];
 
-      mockAdapter.handler = (options) async {
-        callCount++;
-        if (callCount == 1) {
+        mockAdapter.handler = (options) async {
+          callCount++;
+          if (callCount == 1) {
+            return createJsonResponse(emptyBreedResponse);
+          } else {
+            return createJsonResponse(validResponse);
+          }
+        };
+
+        final result = await repository.getRandomDogWithBreed();
+        expect(callCount, 2);
+        expect(result.id, 'valid_dog');
+        expect(result.breeds.first.name, 'Golden Retriever');
+      },
+    );
+
+    test(
+      'getRandomDogWithBreed throws InvalidResponseException if all retries return unusable response',
+      () async {
+        final emptyBreedResponse = [
+          {
+            'id': 'no_breed',
+            'url': 'https://example.com/no_breed.jpg',
+            'width': 640,
+            'height': 480,
+            'breeds': [],
+          },
+        ];
+
+        int callCount = 0;
+        mockAdapter.handler = (options) async {
+          callCount++;
           return createJsonResponse(emptyBreedResponse);
-        } else {
-          return createJsonResponse(validResponse);
-        }
-      };
+        };
 
-      final result = await repository.getRandomDogWithBreed();
-      expect(callCount, 2);
-      expect(result.id, 'valid_dog');
-      expect(result.breeds.first.name, 'Golden Retriever');
-    });
-
-    test('getRandomDogWithBreed throws InvalidResponseException if all retries return unusable response', () async {
-      final emptyBreedResponse = [
-        {
-          'id': 'no_breed',
-          'url': 'https://example.com/no_breed.jpg',
-          'width': 640,
-          'height': 480,
-          'breeds': []
-        }
-      ];
-
-      int callCount = 0;
-      mockAdapter.handler = (options) async {
-        callCount++;
-        return createJsonResponse(emptyBreedResponse);
-      };
-
-      await expectLater(
-        () => repository.getRandomDogWithBreed(),
-        throwsA(isA<InvalidResponseException>()),
-      );
-      expect(callCount, 4);
-    });
-
-    test('getRandomDogWithBreed throws ApiAuthException on 401 immediately without retrying', () async {
-      int callCount = 0;
-      mockAdapter.handler = (options) async {
-        callCount++;
-        // We simulate a DioError with 401 response status
-        throw DioException(
-          requestOptions: options,
-          response: Response(
-            requestOptions: options,
-            statusCode: 401,
-          ),
-          error: const ApiAuthException(),
+        await expectLater(
+          () => repository.getRandomDogWithBreed(),
+          throwsA(isA<InvalidResponseException>()),
         );
-      };
+        expect(callCount, 4);
+      },
+    );
 
-      await expectLater(
-        () => repository.getRandomDogWithBreed(),
-        throwsA(isA<ApiAuthException>()),
-      );
-      expect(callCount, 1); // No retries
-    });
+    test(
+      'getRandomDogWithBreed throws ApiAuthException on 401 immediately without retrying',
+      () async {
+        int callCount = 0;
+        mockAdapter.handler = (options) async {
+          callCount++;
+          // We simulate a DioError with 401 response status
+          throw DioException(
+            requestOptions: options,
+            response: Response(requestOptions: options, statusCode: 401),
+            error: const ApiAuthException(),
+          );
+        };
+
+        await expectLater(
+          () => repository.getRandomDogWithBreed(),
+          throwsA(isA<ApiAuthException>()),
+        );
+        expect(callCount, 1); // No retries
+      },
+    );
 
     test('getRandomDogWithBreed throws RateLimitException on 429', () async {
       mockAdapter.handler = (options) async {
         throw DioException(
           requestOptions: options,
-          response: Response(
-            requestOptions: options,
-            statusCode: 429,
-          ),
+          response: Response(requestOptions: options, statusCode: 429),
           error: const RateLimitException(),
         );
       };
@@ -259,10 +259,7 @@ void main() {
       mockAdapter.handler = (options) async {
         throw DioException(
           requestOptions: options,
-          response: Response(
-            requestOptions: options,
-            statusCode: 500,
-          ),
+          response: Response(requestOptions: options, statusCode: 500),
           error: const ServerException(),
         );
       };
