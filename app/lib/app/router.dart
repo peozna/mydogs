@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/dog_discovery/presentation/dog_discovery_page.dart';
 import '../features/gallery/presentation/gallery_page.dart';
 import '../features/gallery/presentation/saved_dog_detail_page.dart';
+import '../features/settings/presentation/settings_page.dart';
 
 /// Centralized route configuration for the MyDogs app.
 ///
@@ -11,6 +12,7 @@ import '../features/gallery/presentation/saved_dog_detail_page.dart';
 /// - `/` — Random Dog discovery screen
 /// - `/gallery` — local gallery screen
 /// - `/gallery/:id` — saved dog detail screen (Phase 5)
+/// - `/settings` — API key configuration screen
 final router = GoRouter(
   initialLocation: '/',
   routes: [
@@ -31,6 +33,11 @@ final router = GoRouter(
         final id = state.pathParameters['id']!;
         return SavedDogDetailPage(id: id);
       },
+    ),
+    GoRoute(
+      path: '/settings',
+      name: 'settings',
+      builder: (context, state) => const SettingsPage(),
     ),
   ],
   errorBuilder: (context, state) => Scaffold(

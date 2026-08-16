@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/config/app_config.dart';
+import '../../../core/config/api_key_controller.dart';
 import '../../../core/error/error_formatter.dart';
 import '../../gallery/data/gallery_repository.dart';
 import '../domain/dog_image.dart';
@@ -21,7 +21,7 @@ class DogDiscoveryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!AppConfig.hasApiKey) {
+    if (!ref.watch(hasApiKeyProvider)) {
       return const _ConfigurationError();
     }
 
@@ -36,6 +36,11 @@ class DogDiscoveryPage extends ConsumerWidget {
             icon: const Icon(Icons.photo_library),
             tooltip: 'View Gallery',
             onPressed: () => context.push('/gallery'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => context.push('/settings'),
           ),
           ...state.maybeWhen(
             data: (dogImage) => [
@@ -457,9 +462,14 @@ class _ConfigurationError extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Launch the app with:\n'
-                'flutter run --dart-define=DOG_API_KEY=your-key',
+                'Add your TheDogAPI key to start discovering dogs.',
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () => context.push('/settings'),
+                icon: const Icon(Icons.settings),
+                label: const Text('Configure API Key'),
               ),
             ],
           ),

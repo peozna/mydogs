@@ -10,7 +10,10 @@ class AppConfig {
 
   static String? _overrideApiKey;
 
-  /// Sets an override API key for testing purposes.
+  /// Overrides the compile-time API key at runtime.
+  ///
+  /// Used both by the in-app settings screen (to apply a user-entered key) and
+  /// by tests. Set to `null` to fall back to the compile-time key.
   static set overrideApiKey(String? value) => _overrideApiKey = value;
 
   /// The TheDogAPI base URL.

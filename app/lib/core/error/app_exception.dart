@@ -18,10 +18,7 @@ sealed class AppException implements Exception {
 /// Thrown when the API key is missing or invalid.
 class MissingApiKeyException extends AppException {
   const MissingApiKeyException()
-    : super(
-        'No API key configured. Launch the app with '
-        '--dart-define=DOG_API_KEY=your-key.',
-      );
+    : super('No API key configured. Add one in Settings.');
 }
 
 /// Thrown when the API returns an authentication error (HTTP 401/403).

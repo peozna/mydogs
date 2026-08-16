@@ -68,10 +68,10 @@ jobs:
           EOF
 
       - name: Build split-per-ABI APKs
-        run: flutter build apk --release --split-per-abi --dart-define=DOG_API_KEY=${{ secrets.DOG_API_KEY }}
+        run: flutter build apk --release --split-per-abi
 
       - name: Build universal APK
-        run: flutter build apk --release --dart-define=DOG_API_KEY=${{ secrets.DOG_API_KEY }}
+        run: flutter build apk --release
 
       - name: Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
