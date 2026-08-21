@@ -50,8 +50,8 @@ class DogDiscoveryPage extends ConsumerWidget {
                 onPressed: isLoading
                     ? null
                     : () => ref
-                          .read(dogDiscoveryControllerProvider.notifier)
-                          .fetchNewDog(),
+                        .read(dogDiscoveryControllerProvider.notifier)
+                        .fetchNewDog(),
               ),
             ],
             orElse: () => [],
@@ -86,11 +86,16 @@ class DogDiscoveryPage extends ConsumerWidget {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  formatErrorMessage(error),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 240),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      formatErrorMessage(error),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -112,8 +117,8 @@ class DogDiscoveryPage extends ConsumerWidget {
           onPressed: isLoading
               ? null
               : () => ref
-                    .read(dogDiscoveryControllerProvider.notifier)
-                    .fetchNewDog(),
+                  .read(dogDiscoveryControllerProvider.notifier)
+                  .fetchNewDog(),
           icon: const Icon(Icons.pets),
           label: const Text('New Dog'),
         ),
@@ -208,9 +213,8 @@ class _DogDiscoveryView extends ConsumerWidget {
                                 ? null
                                 : () async {
                                     ref
-                                            .read(isSavingDogProvider.notifier)
-                                            .state =
-                                        true;
+                                        .read(isSavingDogProvider.notifier)
+                                        .state = true;
                                     try {
                                       await ref
                                           .read(galleryRepositoryProvider)
@@ -249,11 +253,10 @@ class _DogDiscoveryView extends ConsumerWidget {
                                       }
                                     } finally {
                                       ref
-                                              .read(
-                                                isSavingDogProvider.notifier,
-                                              )
-                                              .state =
-                                          false;
+                                          .read(
+                                            isSavingDogProvider.notifier,
+                                          )
+                                          .state = false;
                                     }
                                   },
                             icon: isSaving
@@ -274,7 +277,9 @@ class _DogDiscoveryView extends ConsumerWidget {
                       const SizedBox(height: 16),
                       Text(
                         breed.name,
-                        style: Theme.of(context).textTheme.headlineMedium
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
                             ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.primary,
@@ -285,13 +290,13 @@ class _DogDiscoveryView extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           breed.breedGroup!,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant,
-                                fontStyle: FontStyle.italic,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                    fontStyle: FontStyle.italic,
+                                  ),
                         ),
                       ],
                       const SizedBox(height: 16),
@@ -393,8 +398,8 @@ class _BreedInfoSection extends StatelessWidget {
                   child: Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
               ],

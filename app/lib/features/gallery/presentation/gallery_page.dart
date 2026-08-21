@@ -45,11 +45,16 @@ class GalleryPage extends ConsumerWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  formatErrorMessage(error),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 240),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      formatErrorMessage(error),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -72,8 +77,8 @@ class GalleryPage extends ConsumerWidget {
           final crossAxisCount = screenWidth > 900
               ? 4
               : screenWidth > 600
-              ? 3
-              : 2;
+                  ? 3
+                  : 2;
 
           return RefreshIndicator(
             onRefresh: () =>

@@ -212,7 +212,13 @@ void main() {
 
         await expectLater(
           () => repository.getRandomDogWithBreed(),
-          throwsA(isA<InvalidResponseException>()),
+          throwsA(
+            isA<InvalidResponseException>().having(
+              (e) => e.details,
+              'details',
+              contains('Image had no breed information'),
+            ),
+          ),
         );
         expect(callCount, 4);
       },

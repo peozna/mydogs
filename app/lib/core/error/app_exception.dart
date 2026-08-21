@@ -3,7 +3,7 @@
 /// All exceptions inherit from [AppException] so the UI can catch a single
 /// type and present a user-friendly message with an optional retry action.
 sealed class AppException implements Exception {
-  const AppException(this.message, {this.cause});
+  const AppException(this.message, {this.cause, this.details});
 
   /// Human-readable message suitable for display in the UI.
   final String message;
@@ -11,54 +11,64 @@ sealed class AppException implements Exception {
   /// The underlying error that caused this exception, if any.
   final Object? cause;
 
+  /// Extra diagnostic information (HTTP status, response body, parse reason).
+  ///
+  /// Safe to show in the UI: must not include request headers or the API key.
+  final String? details;
+
   @override
-  String toString() => '$runtimeType: $message';
+  String toString() {
+    if (details == null || details!.isEmpty) {
+      return '$runtimeType: $message';
+    }
+    return '$runtimeType: $message ($details)';
+  }
 }
 
 /// Thrown when the API key is missing or invalid.
 class MissingApiKeyException extends AppException {
   const MissingApiKeyException()
-    : super('No API key configured. Add one in Settings.');
+      : super('No API key configured. Add one in Settings.');
 }
 
 /// Thrown when the API returns an authentication error (HTTP 401/403).
 class ApiAuthException extends AppException {
-  const ApiAuthException({super.cause})
-    : super('Authentication failed. Check that your API key is valid.');
+  const ApiAuthException({super.cause, super.details})
+      : super('Authentication failed. Check that your API key is valid.');
 }
 
 /// Thrown when the API rate-limits requests (HTTP 429).
 class RateLimitException extends AppException {
-  const RateLimitException({super.cause})
-    : super('Too many requests. Please wait a moment and try again.');
+  const RateLimitException({super.cause, super.details})
+      : super('Too many requests. Please wait a moment and try again.');
 }
 
 /// Thrown when the API returns a server error (HTTP 5xx).
 class ServerException extends AppException {
-  const ServerException({super.cause})
-    : super('The server is having issues. Please try again later.');
+  const ServerException({super.cause, super.details})
+      : super('The server is having issues. Please try again later.');
 }
 
 /// Thrown when a network connectivity error occurs.
 class NetworkException extends AppException {
-  const NetworkException({super.cause})
-    : super('Network error. Check your connection and try again.');
+  const NetworkException({super.cause, super.details})
+      : super('Network error. Check your connection and try again.');
 }
 
 /// Thrown when the API response is invalid or incomplete.
 class InvalidResponseException extends AppException {
-  const InvalidResponseException({super.cause})
-    : super('Received an invalid response from the server.');
+  const InvalidResponseException({super.cause, super.details})
+      : super('Received an invalid response from the server.');
 }
 
 /// Thrown when an image download fails.
 class ImageDownloadException extends AppException {
-  const ImageDownloadException({super.cause})
-    : super('Failed to download the image.');
+  const ImageDownloadException({super.cause, super.details})
+      : super('Failed to download the image.');
 }
 
 /// Thrown when a local file or metadata operation fails.
 class StorageException extends AppException {
-  const StorageException({super.cause})
-    : super('Failed to save or read local data.');
+  const StorageException({super.cause, super.details})
+      : super('Failed to save or read local data.');
 }

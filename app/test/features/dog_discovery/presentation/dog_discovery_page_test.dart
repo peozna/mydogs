@@ -258,7 +258,9 @@ void main() {
         onGetRandomDogWithBreed: () async {
           callCount++;
           if (callCount == 1) {
-            throw const NetworkException();
+            throw const InvalidResponseException(
+              details: 'HTTP 400 — {"message":"Invalid API Key"}',
+            );
           }
           return dogImage;
         },
@@ -279,7 +281,11 @@ void main() {
 
       expect(find.text('Error Occurred'), findsOneWidget);
       expect(
-        find.text('Network error. Check your connection and try again.'),
+        find.textContaining('Received an invalid response from the server.'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('HTTP 400 — {"message":"Invalid API Key"}'),
         findsOneWidget,
       );
       expect(find.widgetWithText(ElevatedButton, 'Retry'), findsOneWidget);

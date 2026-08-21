@@ -33,6 +33,15 @@ void main() {
         formatErrorMessage(const InvalidResponseException()),
         'Received an invalid response from the server.',
       );
+      expect(
+        formatErrorMessage(
+          const InvalidResponseException(
+            details: 'HTTP 400 — {"message":"Invalid API Key"}',
+          ),
+        ),
+        'Received an invalid response from the server.\n\n'
+        'HTTP 400 — {"message":"Invalid API Key"}',
+      );
     });
 
     test('returns generic fallback for non-AppException errors', () {
@@ -47,6 +56,19 @@ void main() {
       expect(
         formatErrorMessage('plain string error'),
         'An unexpected error occurred. Please try again.',
+      );
+    });
+
+    test('describeServerPayload serializes and truncates payloads', () {
+      expect(describeServerPayload(null), 'null');
+      expect(describeServerPayload('  '), '(empty)');
+      expect(
+        describeServerPayload({'message': 'Invalid API Key'}),
+        '{"message":"Invalid API Key"}',
+      );
+      expect(
+        describeServerPayload('x' * 10, maxLength: 4),
+        'xxxx…',
       );
     });
   });
