@@ -8,27 +8,21 @@ void main() {
   testWidgets('shows app name with a small version beside it', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          appVersionProvider.overrideWith((ref) async => '1.0.0'),
-        ],
+        overrides: [appVersionProvider.overrideWithValue('1.0.8')],
         child: MaterialApp(
           home: Scaffold(appBar: AppBar(title: const AppTitle())),
         ),
       ),
     );
 
-    await tester.pumpAndSettle();
-
     expect(find.text('MyDogs'), findsOneWidget);
-    expect(find.text('1.0.0'), findsOneWidget);
+    expect(find.text('1.0.8'), findsOneWidget);
   });
 
-  testWidgets('hides version while it is still loading', (tester) async {
+  testWidgets('hides version when it is not configured', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          appVersionProvider.overrideWith((ref) => Future.value('')),
-        ],
+        overrides: [appVersionProvider.overrideWithValue('')],
         child: MaterialApp(
           home: Scaffold(appBar: AppBar(title: const AppTitle())),
         ),
@@ -36,6 +30,6 @@ void main() {
     );
 
     expect(find.text('MyDogs'), findsOneWidget);
-    expect(find.text('1.0.0'), findsNothing);
+    expect(find.text('1.0.8'), findsNothing);
   });
 }

@@ -9,7 +9,7 @@ class AppTitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final version = ref.watch(appVersionProvider).valueOrNull;
+    final version = ref.watch(appVersionProvider);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -17,7 +17,7 @@ class AppTitle extends ConsumerWidget {
       textBaseline: TextBaseline.alphabetic,
       children: [
         const Text('MyDogs'),
-        if (version != null && version.isNotEmpty) ...[
+        if (version.isNotEmpty) ...[
           const SizedBox(width: 8),
           Text(
             version,
