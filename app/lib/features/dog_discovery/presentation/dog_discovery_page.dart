@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_title.dart';
 import '../../../core/config/api_key_controller.dart';
 import '../../../core/error/error_formatter.dart';
 import '../../gallery/data/gallery_repository.dart';
@@ -30,7 +31,7 @@ class DogDiscoveryPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MyDogs'),
+        title: const AppTitle(),
         actions: [
           IconButton(
             icon: const Icon(Icons.photo_library),
@@ -448,7 +449,7 @@ class _ConfigurationError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('MyDogs')),
+      appBar: AppBar(title: const AppTitle()),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
